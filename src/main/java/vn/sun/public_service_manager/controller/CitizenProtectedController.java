@@ -9,16 +9,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/citizen")
+@RequestMapping("/api/citizen/protected")
 public class CitizenProtectedController {
 
-    // 4. API được bảo vệ (Chỉ cho phép người dùng có vai trò CITIZEN)
+    // Demo API được bảo vệ (thay đổi route để tránh trùng với production endpoint)
     @PreAuthorize("hasRole('CITIZEN')")
-    @GetMapping("/profile")
+    @GetMapping("/hello")
     public ResponseEntity<String> getCitizenProfile() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         // auth.getName() là nationalId của Citizen đã đăng nhập
-        return ResponseEntity.ok("Welcome, Citizen! Your National ID (from token) is: " + auth.getName());
+        return ResponseEntity.ok("(demo) Welcome, Citizen! Your National ID (from token) is: " + auth.getName());
     }
 }
