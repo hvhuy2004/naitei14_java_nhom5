@@ -8,11 +8,15 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import lombok.RequiredArgsConstructor;
 import vn.sun.public_service_manager.dto.ApplicationDTO;
 import vn.sun.public_service_manager.dto.ApplicationFilterDTO;
+import vn.sun.public_service_manager.dto.request.AssignStaffDTO;
+import vn.sun.public_service_manager.dto.request.UpdateApplicationStatusDTO;
 import vn.sun.public_service_manager.dto.response.ApplicationResDTO;
+import vn.sun.public_service_manager.repository.UserRepository;
 import vn.sun.public_service_manager.service.ApplicationService;
 import vn.sun.public_service_manager.service.ServiceTypeService;
 import vn.sun.public_service_manager.utils.constant.StatusEnum;
@@ -25,6 +29,7 @@ public class AdminApplicationController {
 
     private final ApplicationService applicationService;
     private final ServiceTypeService serviceTypeService;
+    private final UserRepository userRepository;
 
     @GetMapping
     public String listApplications(
@@ -67,22 +72,45 @@ public class AdminApplicationController {
 
         return "admin/application_list";
     }
-
     @GetMapping("/{id}")
     public String viewApplicationDetail(@PathVariable Long id, Model model) {
         try {
             ApplicationResDTO application = applicationService.getApplicationById(id);
-            System.out.println("==== Controller Debug ====");
-            System.out.println("Application in Model: " + application);
-            System.out.println("Code: " + application.getCode());
-            System.out.println("SubmittedAt: " + application.getSubmittedAt());
-            System.out.println("Status: " + application.getStatus());
-            System.out.println("==========================");
             model.addAttribute("applicationDetail", application);
+            model.addAttribute("statuses", StatusEnum.values());
+            model.addAttribute("staffList", userRepository.findAllStaff());
             return "admin/application_detail";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
             return "error/404";
         }
+    }
+
+    @PostMapping("/{id}/update-status")
+    public String updateStatus(@PathVariable Long id, 
+                               @ModelAttribute UpdateApplicationStatusDTO dto,
+                               RedirectAttributes redirectAttributes) {
+        try {
+            dto.setApplicationId(id);
+            applicationService.updateApplicationStatus(dto);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật trạng thái thành công");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi: " + e.getMessage());
+        }
+        return "redirect:/admin/applications/" + id;
+    }
+
+    @PostMapping("/{id}/assign-staff")
+    public String assignStaff(@PathVariable Long id,
+                              @ModelAttribute AssignStaffDTO dto,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            dto.setApplicationId(id);
+            applicationService.assignStaffToApplication(dto);
+            redirectAttributes.addFlashAttribute("successMessage", "Gán nhân viên thành công");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi: " + e.getMessage());
+        }
+        return "redirect:/admin/applications/" + id;
     }
 }

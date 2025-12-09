@@ -9,17 +9,23 @@ import org.springframework.web.multipart.MultipartFile;
 
 import vn.sun.public_service_manager.dto.ApplicationDTO;
 import vn.sun.public_service_manager.dto.ApplicationFilterDTO;
+import vn.sun.public_service_manager.dto.request.AssignStaffDTO;
+import vn.sun.public_service_manager.dto.request.UpdateApplicationStatusDTO;
 import vn.sun.public_service_manager.dto.response.ApplicationResDTO;
 import vn.sun.public_service_manager.entity.Application;
 import vn.sun.public_service_manager.entity.ApplicationDocument;
 import vn.sun.public_service_manager.entity.ApplicationStatus;
 import vn.sun.public_service_manager.entity.Citizen;
+import vn.sun.public_service_manager.entity.User;
 import vn.sun.public_service_manager.exception.ResourceNotFoundException;
 import vn.sun.public_service_manager.repository.*;
 import vn.sun.public_service_manager.repository.specification.ApplicationSpecification;
 import vn.sun.public_service_manager.service.ApplicationService;
 import vn.sun.public_service_manager.utils.constant.StatusEnum;
 import vn.sun.public_service_manager.utils.constant.UploadType;
+import vn.sun.public_service_manager.utils.SecurityUtil;
+
+import java.time.LocalDateTime;
 
 @Service
 public class ApplicationServiceImpl implements ApplicationService {
@@ -28,17 +34,24 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final ApplicationStatusRepository applicationStatusRepository;
     private final ApplicationDocumentRepository applicationDocumentRepository;
     private final CitizenRepository citizenRepository;
+    private final UserRepository userRepository;
+    private final SecurityUtil securityUtil;
 
     public ApplicationServiceImpl(
             ApplicationRepository applicationRepository,
             ServiceRepository serviceRepository,
             ApplicationStatusRepository applicationStatusRepository,
-            ApplicationDocumentRepository applicationDocumentRepository, CitizenRepository citizenRepository) {
+            ApplicationDocumentRepository applicationDocumentRepository, 
+            CitizenRepository citizenRepository,
+            UserRepository userRepository,
+            SecurityUtil securityUtil) {
         this.applicationRepository = applicationRepository;
         this.serviceRepository = serviceRepository;
         this.applicationStatusRepository = applicationStatusRepository;
         this.applicationDocumentRepository = applicationDocumentRepository;
         this.citizenRepository = citizenRepository;
+        this.userRepository = userRepository;
+        this.securityUtil = securityUtil;
     }
 
     @Transactional
@@ -187,5 +200,61 @@ public class ApplicationServiceImpl implements ApplicationService {
         Specification<Application> spec = ApplicationSpecification.filterApplications(filter);
         Page<Application> applicationPage = applicationRepository.findAll(spec, pageable);
         return applicationPage.map(ApplicationDTO::fromEntity);
+    }
+
+    @Override
+    @Transactional
+    public void updateApplicationStatus(UpdateApplicationStatusDTO dto) {
+        Application application = applicationRepository.findById(dto.getApplicationId())
+                .orElseThrow(() -> new ResourceNotFoundException("Application not found with id: " + dto.getApplicationId()));
+        
+        // Create new status record
+        ApplicationStatus status = new ApplicationStatus();
+        status.setApplication(application);
+        status.setStatus(dto.getStatus());
+        status.setNote(dto.getNote());
+        status.setUpdatedAt(LocalDateTime.now());
+        // TODO: Set updatedBy from current user
+        
+        applicationStatusRepository.save(status);
+        
+        // Upload response documents if any
+        if (dto.getDocuments() != null && dto.getDocuments().length > 0) {
+            for (MultipartFile file : dto.getDocuments()) {
+                if (!file.isEmpty()) {
+                    ApplicationDocument document = new ApplicationDocument();
+                    document.setApplication(application);
+                    document.setFileName(file.getOriginalFilename());
+                    document.setType(UploadType.STAFF_FEEDBACK);
+                    document.setUploadedAt(LocalDateTime.now());
+                    applicationDocumentRepository.save(document);
+                }
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void assignStaffToApplication(AssignStaffDTO dto) {
+        Application application = applicationRepository.findById(dto.getApplicationId())
+                .orElseThrow(() -> new ResourceNotFoundException("Application not found with id: " + dto.getApplicationId()));
+        
+        User staff = userRepository.findById(dto.getStaffId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + dto.getStaffId()));
+        
+        application.setAssignedStaff(staff);
+        applicationRepository.save(application);
+        
+        // Create status log for assignment
+        if (dto.getNote() != null && !dto.getNote().isEmpty()) {
+            ApplicationStatus status = new ApplicationStatus();
+            status.setApplication(application);
+            status.setStatus(application.getStatuses().isEmpty() ? StatusEnum.PROCESSING : 
+                             application.getStatuses().get(0).getStatus());
+            status.setNote(dto.getNote());
+            status.setUpdatedAt(LocalDateTime.now());
+            // TODO: Set updatedBy from current user
+            applicationStatusRepository.save(status);
+        }
     }
 }

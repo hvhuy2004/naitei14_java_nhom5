@@ -140,29 +140,90 @@
                     </div>
                 </div>
 
-                <!-- Actions -->
-                <div class="card">
+                <!-- Update Status Form -->
+                <div class="card mb-3">
                     <div class="card-header bg-dark text-white">
-                        <h5><i class="fas fa-tasks"></i> Thao tác</h5>
+                        <h5><i class="fas fa-edit"></i> Cập nhật trạng thái</h5>
                     </div>
                     <div class="card-body">
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-success" type="button">
-                                <i class="fas fa-check"></i> Phê duyệt
+                        <form th:action="@{/admin/applications/{id}/update-status(id=${applicationDetail.id})}" 
+                              method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Trạng thái mới</label>
+                                <select class="form-select" id="status" name="status" required>
+                                    <option value="RECEIVED" th:selected="${applicationDetail.status != null and applicationDetail.status.name() == 'RECEIVED'}">Đã tiếp nhận</option>
+                                    <option value="PROCESSING" th:selected="${applicationDetail.status != null and applicationDetail.status.name() == 'PROCESSING'}">Đang xử lý</option>
+                                    <option value="APPROVED" th:selected="${applicationDetail.status != null and applicationDetail.status.name() == 'APPROVED'}">Đã phê duyệt</option>
+                                    <option value="REJECTED" th:selected="${applicationDetail.status != null and applicationDetail.status.name() == 'REJECTED'}">Đã từ chối</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="note" class="form-label">Ghi chú / Lý do</label>
+                                <textarea class="form-control" id="note" name="note" rows="3" 
+                                          placeholder="Nhập ghi chú hoặc lý do từ chối..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="documents" class="form-label">Tài liệu phản hồi</label>
+                                <input class="form-control" type="file" id="documents" name="documents" multiple>
+                                <small class="text-muted">Có thể tải lên nhiều file</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-save"></i> Cập nhật
                             </button>
-                            <button class="btn btn-danger" type="button">
-                                <i class="fas fa-times"></i> Từ chối
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Assign Staff Form -->
+                <div class="card">
+                    <div class="card-header bg-warning">
+                        <h5><i class="fas fa-user-edit"></i> Gán nhân viên</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/applications/{id}/assign-staff(id=${applicationDetail.id})}" 
+                              method="post">
+                            <div class="mb-3">
+                                <label for="staffId" class="form-label">Chọn nhân viên</label>
+                                <select class="form-select" id="staffId" name="staffId" required>
+                                    <option value="">-- Chọn nhân viên --</option>
+                                    <option th:each="staff : ${staffList}" 
+                                            th:value="${staff.id}" 
+                                            th:text="${staff.email + ' (' + staff.username + ')'}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="assignNote" class="form-label">Ghi chú</label>
+                                <textarea class="form-control" id="assignNote" name="note" rows="2" 
+                                          placeholder="Lý do gán hoặc hướng dẫn..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-warning w-100">
+                                <i class="fas fa-user-check"></i> Gán nhân viên
                             </button>
-                            <button class="btn btn-warning" type="button">
-                                <i class="fas fa-user-edit"></i> Gán nhân viên
-                            </button>
-                            <button class="btn btn-info text-white" type="button">
-                                <i class="fas fa-comment"></i> Thêm ghi chú
-                            </button>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div th:if="${successMessage}" class="position-fixed top-0 end-0 p-3" style="z-index: 11">
+        <div class="toast show" role="alert">
+            <div class="toast-header bg-success text-white">
+                <strong class="me-auto">Thành công</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" th:text="${successMessage}"></div>
+        </div>
+    </div>
+    <div th:if="${errorMessage}" class="position-fixed top-0 end-0 p-3" style="z-index: 11">
+        <div class="toast show" role="alert">
+            <div class="toast-header bg-danger text-white">
+                <strong class="me-auto">Lỗi</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" th:text="${errorMessage}"></div>
         </div>
     </div>
 

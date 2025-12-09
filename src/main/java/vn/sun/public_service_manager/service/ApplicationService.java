@@ -6,8 +6,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import vn.sun.public_service_manager.dto.ApplicationDTO;
 import vn.sun.public_service_manager.dto.ApplicationFilterDTO;
+import vn.sun.public_service_manager.dto.request.AssignStaffDTO;
+import vn.sun.public_service_manager.dto.request.UpdateApplicationStatusDTO;
 import vn.sun.public_service_manager.dto.response.ApplicationResDTO;
 import vn.sun.public_service_manager.entity.Application;
+import vn.sun.public_service_manager.utils.constant.StatusEnum;
 
 public interface ApplicationService {
 
@@ -21,4 +24,8 @@ public interface ApplicationService {
     
     // Admin methods
     Page<ApplicationDTO> getAllApplications(ApplicationFilterDTO filter, Pageable pageable);
+    
+    void updateApplicationStatus(UpdateApplicationStatusDTO dto);
+    
+    void assignStaffToApplication(AssignStaffDTO dto);
 }
