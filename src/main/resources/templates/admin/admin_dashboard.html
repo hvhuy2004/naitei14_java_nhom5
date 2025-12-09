@@ -36,28 +36,19 @@
                             <span th:text="${roles}">ROLE_ADMIN</span>
                         </span>
                     </div>
-                </div>
-
-                <!-- Statistics Cards -->
-                <div class="row g-3 mb-4">
-                    <div class="col-xl-3 col-md-6">
-                        <div class="card card-stats border-0 shadow-sm">
-                            <div class="card-body">
-                                <div class="row align-items-center">
-                                    <div class="col">
-                                        <span class="text-muted text-uppercase small fw-bold">Người dùng</span>
-                                        <h3 class="mb-0 mt-2">1,234</h3>
-                                    </div>
-                                    <div class="col-auto">
-                                        <div class="icon bg-primary bg-gradient text-white rounded-circle p-3">
-                                            <i class="bi bi-people fs-4"></i>
+                    <div class="card-body">
+                        <p>Chào mừng Admin đến với trang quản trị!</p>
+                        <p>Vai trò của bạn: <span th:text="${roles}"></span></p>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <a href="/admin/users" class="text-decoration-none">
+                                    <div class="card text-white bg-success mb-3">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><i class="bi bi-people-fill"></i> Quản lý người dùng</h5>
+                                            <p class="card-text">Xem danh sách, thêm, sửa, xóa tài khoản admin và staff</p>
                                         </div>
                                     </div>
-                                </div>
-                                <p class="mt-3 mb-0 text-muted small">
-                                    <span class="text-success me-1"><i class="bi bi-arrow-up"></i> 12%</span>
-                                    <span>So với tháng trước</span>
-                                </p>
+                                </a>
                             </div>
                         </div>
                     </div>
