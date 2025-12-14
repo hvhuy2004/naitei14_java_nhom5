@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import vn.sun.public_service_manager.entity.Service;
+import vn.sun.public_service_manager.entity.ServiceType;
 
 @Repository
 public interface ServiceRepository extends JpaRepository<Service, Long> {
@@ -21,4 +22,18 @@ public interface ServiceRepository extends JpaRepository<Service, Long> {
     Page<Service> findByServiceTypeId(Long serviceTypeId, Pageable pageable);
 
     Page<Service> findByResponsibleDepartmentId(Long departmentId, Pageable pageable);
+
+    Page<Service> findByNameContainingIgnoreCaseOrCodeContainingIgnoreCase(
+            String nameKeyword,
+            String codeKeyword,
+            Pageable pageable);
+
+    Page<Service> findByServiceType(ServiceType serviceType, Pageable pageable);
+
+    Page<Service> findByNameContainingIgnoreCaseOrCodeContainingIgnoreCaseAndServiceType(
+            String nameKeyword,
+            String codeKeyword,
+            ServiceType serviceType,
+            Pageable pageable);
+    long countByServiceTypeId(Long id);
 }

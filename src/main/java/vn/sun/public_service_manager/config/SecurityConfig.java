@@ -35,8 +35,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // API Auth cho Citizen
                         .requestMatchers("/api/citizen/auth/**", "/static/**").permitAll()
+                        .requestMatchers("/services/**").permitAll()
                         // Admin MVC routes
                         .requestMatchers("/admin/login", "/admin/logout").permitAll()
+                        // Restrict admin dashboard to specific roles
+                        .requestMatchers("/admin/dashboard").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_STAFF")
+                        .requestMatchers("/admin/**").authenticated()
                         .requestMatchers("/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_STAFF")
                         // Admin API routes
                         .requestMatchers("/api/v1/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_STAFF")
