@@ -175,6 +175,16 @@ public class ApplicationServiceImpl implements ApplicationService {
                 return docDTO;
             }).toList());
         }
+
+        // Map assigned staff
+        if (application.getAssignedStaff() != null) {
+            ApplicationResDTO.ApplicationStaff staffDTO = new ApplicationResDTO.ApplicationStaff();
+            staffDTO.setId(application.getAssignedStaff().getId());
+            staffDTO.setUsername(application.getAssignedStaff().getUsername());
+            staffDTO.setEmail(application.getAssignedStaff().getEmail());
+            dto.setAssignedStaff(staffDTO);
+        }
+
         return dto;
     }
     @Override

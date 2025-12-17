@@ -188,7 +188,8 @@
                                     <option value="">-- Chọn nhân viên --</option>
                                     <option th:each="staff : ${staffList}" 
                                             th:value="${staff.id}" 
-                                            th:text="${staff.email + ' (' + staff.username + ')'}">
+                                            th:text="${staff.email + ' (' + staff.username + ')'}"
+                                            th:selected="${applicationDetail.assignedStaff != null and applicationDetail.assignedStaff.id == staff.id}">
                                     </option>
                                 </select>
                             </div>

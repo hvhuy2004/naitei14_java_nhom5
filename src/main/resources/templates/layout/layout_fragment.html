@@ -165,12 +165,6 @@
                 <i class="bi bi-file-earmark-text"></i> Quản lý hồ sơ
             </a>
 
-            <!-- Báo cáo thống kê - ADMIN và MANAGER -->
-            <a class="nav-link" th:classappend="${activePage == 'reports'} ? 'active' : ''"
-                sec:authorize="hasAnyRole('ADMIN','MANAGER')" th:href="@{/admin/reports}">
-                <i class="bi bi-bar-chart"></i> Báo cáo thống kê
-            </a>
-
             <hr class="my-3 bg-white opacity-25">
 
             <!-- Cài đặt hệ thống - Chỉ ADMIN -->

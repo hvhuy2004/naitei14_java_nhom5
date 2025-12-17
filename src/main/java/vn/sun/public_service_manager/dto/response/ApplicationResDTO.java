@@ -27,6 +27,7 @@ public class ApplicationResDTO {
     private ApplicationService service;
     private List<String> requirements;
     private List<ApplicationDocument> documents;
+    private ApplicationStaff assignedStaff;
 
     @Data
     @AllArgsConstructor
@@ -45,6 +46,15 @@ public class ApplicationResDTO {
     public static class ApplicationDocument {
         private String fileName;
         private LocalDateTime uploadedAt;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ApplicationStaff {
+        private Long id;
+        private String username;
+        private String email;
     }
 
 }
