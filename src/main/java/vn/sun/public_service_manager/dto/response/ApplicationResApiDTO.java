@@ -142,7 +142,9 @@ public class ApplicationResApiDTO {
         // ========== PROCESSING LOGS ==========
         List<ProcessingLog> logs = new ArrayList<>();
         if (application.getStatuses() != null && !application.getStatuses().isEmpty()) {
+            System.out.println("Statuses size: " + application.getStatuses().size());
             logs = application.getStatuses().stream()
+                    .filter(status -> status != null && status.getUpdatedAt() != null) // ADD THIS
                     .sorted(Comparator.comparing(ApplicationStatus::getUpdatedAt).reversed())
                     .map(status -> {
                         String note = status.getNote();
@@ -181,7 +183,7 @@ public class ApplicationResApiDTO {
         }
 
         return application.getStatuses().stream()
-                .filter(status -> status.getUpdatedAt() != null)
+                .filter(status -> status != null && status.getUpdatedAt() != null) // ADD null check
                 .max(Comparator.comparing(ApplicationStatus::getUpdatedAt))
                 .map(ApplicationStatus::getStatus)
                 .orElse(StatusEnum.PROCESSING);

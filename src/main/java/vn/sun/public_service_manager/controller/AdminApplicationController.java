@@ -36,7 +36,7 @@ public class AdminApplicationController {
 
     @GetMapping
     public String listApplications(
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) StatusEnum status,
             @RequestParam(required = false) Long serviceTypeId,
@@ -75,7 +75,7 @@ public class AdminApplicationController {
         }
 
         // Create pageable with sorting by submitted date descending
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "submittedAt"));
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "submittedAt"));
 
         // Get applications
         Page<ApplicationDTO> applicationPage = applicationService.getAllApplications(filter, pageable);

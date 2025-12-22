@@ -87,8 +87,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional(readOnly = true)
-    public ApplicationResDTO getApplicationById(Long id, Long citizenId) {
-        Application application = applicationRepository.findByIdWithDetails(id, citizenId)
+    public ApplicationResDTO getApplicationById(Long id) {
+        Application application = applicationRepository.findById(id)
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Hồ sơ không tồn tại hoặc bạn không có quyền truy cập."));
 

@@ -19,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import vn.sun.public_service_manager.dto.response.ApplicationPageResponse;
 import vn.sun.public_service_manager.dto.response.ApplicationResApiDTO;
-import vn.sun.public_service_manager.dto.response.ApplicationResDTO;
 import vn.sun.public_service_manager.dto.response.FileResDTO;
 import vn.sun.public_service_manager.dto.response.MailResDTO;
 import vn.sun.public_service_manager.entity.Application;

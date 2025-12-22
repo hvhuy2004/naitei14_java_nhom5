@@ -36,8 +36,8 @@
                             </a>
 
                             <span class="badge bg-light text-dark d-flex align-items-center">
-            Tổng số: <strong class="ms-1" th:text="${totalItems}">0</strong>
-        </span>
+                                Tổng số: <strong class="ms-1" th:text="${totalItems}">0</strong>
+                            </span>
                         </div>
                     </div>
                     <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
@@ -75,12 +75,12 @@
 
                                     <!-- Service Type Filter -->
                                     <div class="col-md-3">
-                                        <label for="serviceTypeId" class="form-label">Loại dịch vụ</label>
-                                        <select class="form-select" id="serviceTypeId" name="serviceTypeId">
-                                            <option value="">Tất cả loại dịch vụ</option>
-                                            <option th:each="type : ${serviceTypes}" th:value="${type.id}"
-                                                th:text="${type.category}"
-                                                th:selected="${filter.serviceTypeId == type.id}">
+                                        <label for="serviceId" class="form-label">Dịch vụ</label>
+                                        <select class="form-select" id="serviceId" name="serviceId">
+                                            <option value="">Tất cả dịch vụ</option>
+                                            <option th:each="service : ${services}" th:value="${service.id}"
+                                                th:text="${service.name}"
+                                                th:selected="${filter.serviceId == service.id}">
                                             </option>
                                         </select>
                                     </div>
@@ -120,6 +120,7 @@
                             <table class="table table-hover table-striped align-middle">
                                 <thead class="table-light">
                                     <tr>
+                                        <th>ID</th>
                                         <th><i class="bi bi-hash"></i> Mã hồ sơ</th>
                                         <th><i class="bi bi-grid"></i> Dịch vụ</th>
                                         <th><i class="bi bi-tag"></i> Loại dịch vụ</th>
@@ -141,6 +142,7 @@
 
                                     <!-- Data Rows -->
                                     <tr th:each="app : ${applications}">
+                                        <td th:text="${app.id}"></td>
                                         <td>
                                             <span class="badge bg-secondary" th:text="${app.applicationCode}"></span>
                                         </td>
@@ -153,23 +155,20 @@
                                         <td th:text="${#temporals.format(app.submittedAt, 'dd/MM/yyyy HH:mm')}"></td>
                                         <td>
                                             <!-- Status Badges -->
-                                            <span th:if="${app.currentStatus?.name() == 'APPROVED'}"
-                                                class="badge bg-success">
+                                            <span th:if="${app.status.name() == 'APPROVED'}" class="badge bg-success">
                                                 <i class="bi bi-check-circle"></i> Đã phê duyệt
                                             </span>
-                                            <span th:if="${app.currentStatus?.name() == 'REJECTED'}"
-                                                class="badge bg-danger">
+                                            <span th:if="${app.status.name() == 'REJECTED'}" class="badge bg-danger">
                                                 <i class="bi bi-x-circle"></i> Đã từ chối
                                             </span>
-                                            <span th:if="${app.currentStatus?.name() == 'PROCESSING'}"
+                                            <span th:if="${app.status.name() == 'PROCESSING'}"
                                                 class="badge bg-warning text-dark">
                                                 <i class="bi bi-hourglass-split"></i> Đang xử lý
                                             </span>
-                                            <span th:if="${app.currentStatus?.name() == 'RECEIVED'}"
-                                                class="badge bg-info">
+                                            <span th:if="${app.status.name() == 'RECEIVED'}" class="badge bg-info">
                                                 <i class="bi bi-inbox"></i> Đã tiếp nhận
                                             </span>
-                                            <span th:if="${app.currentStatus == null}" class="badge bg-secondary">
+                                            <span th:if="${app.status == null}" class="badge bg-secondary">
                                                 <i class="bi bi-question-circle"></i> Chưa xác định
                                             </span>
                                         </td>
@@ -189,40 +188,46 @@
                         <nav th:if="${totalPages > 1}" class="mt-4">
                             <ul class="pagination justify-content-center">
                                 <!-- Previous Button -->
-                                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                                <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
                                     <a class="page-link" th:href="@{/admin/applications(
-                                           page=${currentPage - 1}, 
-                                           size=${size}, 
-                                           status=${filter.status}, 
-                                           serviceTypeId=${filter.serviceTypeId},
-                                           citizenNationalId=${filter.citizenNationalId}, 
-                                           citizenName=${filter.citizenName})}">
+                   page=${currentPage - 1}, 
+                   size=${size}, 
+                   status=${filter.status}, 
+                   serviceTypeId=${filter.serviceTypeId},
+                   serviceId=${filter.serviceId},
+                   citizenNationalId=${filter.citizenNationalId}, 
+                   citizenName=${filter.citizenName},
+                   assignedStaffId=${filter.assignedStaffId})}">
                                         <i class="bi bi-chevron-left"></i> Trước
                                     </a>
                                 </li>
 
                                 <!-- Page Numbers -->
-                                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                                <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPages)}"
                                     th:classappend="${i == currentPage} ? 'active'">
                                     <a class="page-link" th:href="@{/admin/applications(
-                                           page=${i}, 
-                                           size=${size},
-                                           status=${filter.status}, 
-                                           serviceTypeId=${filter.serviceTypeId},
-                                           citizenNationalId=${filter.citizenNationalId}, 
-                                           citizenName=${filter.citizenName})}" th:text="${i + 1}">
+                   page=${i}, 
+                   size=${size},
+                   status=${filter.status}, 
+                   serviceTypeId=${filter.serviceTypeId},
+                   serviceId=${filter.serviceId},
+                   citizenNationalId=${filter.citizenNationalId}, 
+                   citizenName=${filter.citizenName},
+                   assignedStaffId=${filter.assignedStaffId})}" th:text="${i}">
                                     </a>
                                 </li>
 
                                 <!-- Next Button -->
-                                <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                                <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
                                     <a class="page-link" th:href="@{/admin/applications(
-                                           page=${currentPage + 1}, 
-                                           size=${size},
-                                           status=${filter.status}, 
-                                           serviceTypeId=${filter.serviceTypeId},
-                                           citizenNationalId=${filter.citizenNationalId}, 
-                                           citizenName=${filter.citizenName})}">
+                   page=${currentPage + 1}, 
+                   size=${size},
+                   status=${filter.status}, 
+                   serviceTypeId=${filter.serviceTypeId},
+                   serviceId=${filter.serviceId},
+                   citizenNationalId=${filter.citizenNationalId}, 
+                   citizenName=${filter.citizenName},
+                   assignedStaffId=${filter.assignedStaffId})}">
                                         Sau <i class="bi bi-chevron-right"></i>
                                     </a>
                                 </li>
@@ -230,8 +235,12 @@
 
                             <!-- Page Info -->
                             <div class="text-center text-muted small mt-2">
-                                Trang <strong th:text="${currentPage + 1}">1</strong> /
+                                Trang <strong th:text="${currentPage}">1</strong> /
                                 <strong th:text="${totalPages}">1</strong>
+                                <span class="ms-2">
+                                    (Hiển thị <strong th:text="${#lists.size(applications)}">0</strong> /
+                                    <strong th:text="${totalItems}">0</strong> kết quả)
+                                </span>
                             </div>
                         </nav>
                     </div>
