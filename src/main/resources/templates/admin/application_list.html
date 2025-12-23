@@ -155,19 +155,19 @@
                                         <td th:text="${#temporals.format(app.submittedAt, 'dd/MM/yyyy HH:mm')}"></td>
                                         <td>
                                             <!-- Status Badges -->
-                                            <span th:if="${app.status != null and app.status.name() == 'APPROVED'}"
+                                            <span th:if="${app.status != null and app.getStatus.name() == 'APPROVED'}"
                                                 class="badge bg-success">
                                                 <i class="bi bi-check-circle"></i> Đã phê duyệt
                                             </span>
-                                            <span th:if="${app.status != null and app.status.name() == 'REJECTED'}"
+                                            <span th:if="${app.status != null and app.getStatus.name() == 'REJECTED'}"
                                                 class="badge bg-danger">
                                                 <i class="bi bi-x-circle"></i> Đã từ chối
                                             </span>
-                                            <span th:if="${app.status != null and app.status.name() == 'PROCESSING'}"
+                                            <span th:if="${app.status != null and app.getStatus.name() == 'PROCESSING'}"
                                                 class="badge bg-warning text-dark">
                                                 <i class="bi bi-hourglass-split"></i> Đang xử lý
                                             </span>
-                                            <span th:if="${app.status != null and app.status.name() == 'RECEIVED'}"
+                                            <span th:if="${app.status != null and app.getStatus.name() == 'RECEIVED'}"
                                                 class="badge bg-info">
                                                 <i class="bi bi-inbox"></i> Đã tiếp nhận
                                             </span>
@@ -182,10 +182,9 @@
                                                 <i class="bi bi-eye"></i> Xem
                                             </a>
                                             <button type="button" class="btn btn-sm btn-outline-danger"
-                                                th:data-app-id="${app.id}"
-                                                th:data-app-code="${app.applicationCode}"
-                                                onclick="confirmDeleteFromData(this)"
-                                                data-bs-toggle="tooltip" title="Xóa hồ sơ"
+                                                th:data-app-id="${app.id}" th:data-app-code="${app.applicationCode}"
+                                                onclick="confirmDeleteFromData(this)" data-bs-toggle="tooltip"
+                                                title="Xóa hồ sơ"
                                                 sec:authorize="hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')">
                                                 <i class="bi bi-trash"></i> Xóa
                                             </button>
@@ -287,7 +286,7 @@
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '/admin/applications/' + appId + '/delete';
-                
+
                 const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
                 if (csrfToken) {
                     const input = document.createElement('input');
@@ -296,7 +295,7 @@
                     input.value = csrfToken;
                     form.appendChild(input);
                 }
-                
+
                 document.body.appendChild(form);
                 form.submit();
             }
