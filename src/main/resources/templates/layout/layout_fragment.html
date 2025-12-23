@@ -171,6 +171,12 @@
                 <i class="bi bi-file-earmark-text"></i> Quản lý hồ sơ
             </a>
 
+            <!-- Hoạt động hệ thống - Chỉ ADMIN -->
+            <a class="nav-link" th:classappend="${activePage == 'activity-logs'} ? 'active' : ''"
+                sec:authorize="hasRole('ADMIN')" th:href="@{/admin/activity-logs}">
+                <i class="bi bi-activity"></i> Hoạt động hệ thống
+            </a>
+
             <hr class="my-3 bg-white opacity-25">
 
             <!-- Cài đặt hệ thống - Chỉ ADMIN -->

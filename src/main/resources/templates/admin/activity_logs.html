@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+
+<head th:replace="~{layout/layout_fragment :: head('Hoạt động hệ thống')}"></head>
+
+<body class="d-flex flex-column min-vh-100">
+    <!-- Include Admin Header -->
+    <div th:replace="~{layout/layout_fragment :: admin-header}"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <!-- Sidebar -->
+            <div class="col-md-2 col-lg-2 p-0">
+                <div th:replace="~{layout/layout_fragment :: admin-sidebar('activity-logs')}"></div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10 col-lg-10 p-4">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="h4 mb-1">
+                            <i class="bi bi-activity text-primary"></i> Hoạt động hệ thống
+                        </h2>
+                        <p class="text-muted mb-0">Theo dõi các hoạt động và thay đổi trong hệ thống</p>
+                    </div>
+                </div>
+
+                <!-- Main Card -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history"></i> Lịch sử hoạt động
+                        </h5>
+                        <span class="badge bg-light text-dark">
+                            Tổng số: <strong th:text="${totalItems}">0</strong>
+                        </span>
+                    </div>
+
+                    <!-- Success/Error Messages -->
+                    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show m-3 mb-0" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <span th:text="${successMessage}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show m-3 mb-0" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <span th:text="${errorMessage}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <!-- Filter Section -->
+                    <div class="card-body border-bottom bg-light">
+                        <h6 class="mb-3">
+                            <i class="bi bi-funnel"></i> Bộ lọc
+                        </h6>
+                        <form method="get" th:action="@{/admin/activity-logs}" class="row g-3">
+                            <div class="col-md-4">
+                                <label for="targetType" class="form-label">Loại đối tượng</label>
+                                <select class="form-select" id="targetType" name="targetType">
+                                    <option value="">Tất cả loại</option>
+                                    <option th:each="type : ${targetTypes}" 
+                                            th:value="${type}" 
+                                            th:text="${type}"
+                                            th:selected="${type == selectedTargetType}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-8 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="bi bi-search"></i> Tìm kiếm
+                                </button>
+                                <a th:href="@{/admin/activity-logs}" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Đặt lại
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 5%;">#</th>
+                                        <th style="width: 12%;">
+                                            <i class="bi bi-clock"></i> Thời gian
+                                        </th>
+                                        <th style="width: 15%;">
+                                            <i class="bi bi-person"></i> Người thực hiện
+                                        </th>
+                                        <th style="width: 15%;">
+                                            <i class="bi bi-lightning"></i> Hành động
+                                        </th>
+                                        <th style="width: 12%;">
+                                            <i class="bi bi-tag"></i> Loại đối tượng
+                                        </th>
+                                        <th>
+                                            <i class="bi bi-info-circle"></i> Mô tả
+                                        </th>
+                                        <th style="width: 10%;" class="text-center">
+                                            <i class="bi bi-gear"></i> Thao tác
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(activityLogs)}">
+                                        <td colspan="7" class="text-center py-5 text-muted">
+                                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                            Chưa có hoạt động nào được ghi nhận
+                                        </td>
+                                    </tr>
+                                    <tr th:each="log, iterStat : ${activityLogs}">
+                                        <td class="text-muted small" 
+                                            th:text="${currentPage * pageSize + iterStat.index + 1}">1</td>
+                                        <td class="small">
+                                            <i class="bi bi-calendar-event text-primary"></i>
+                                            <span th:text="${#temporals.format(log.createdAt, 'dd/MM/yyyy')}"></span>
+                                            <br>
+                                            <i class="bi bi-clock text-muted"></i>
+                                            <span th:text="${#temporals.format(log.createdAt, 'HH:mm:ss')}"></span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-2">
+                                                    <span th:switch="${log.actorType?.name()}">
+                                                        <i th:case="'USER'" class="bi bi-person-circle text-primary fs-5"></i>
+                                                        <i th:case="'SYSTEM'" class="bi bi-gear-fill text-secondary fs-5"></i>
+                                                        <i th:case="*" class="bi bi-question-circle text-muted fs-5"></i>
+                                                    </span>
+                                                </div>
+                                                <div class="small">
+                                                    <div class="fw-bold" th:text="${log.actorType?.name()}">USER</div>
+                                                    <div class="text-muted">ID: <span th:text="${log.actorId}">1</span></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge" 
+                                                  th:classappend="${#strings.containsIgnoreCase(log.action, 'create') or #strings.containsIgnoreCase(log.action, 'add')} ? 'bg-success' : 
+                                                                 (${#strings.containsIgnoreCase(log.action, 'update') or #strings.containsIgnoreCase(log.action, 'edit')} ? 'bg-info' : 
+                                                                 (${#strings.containsIgnoreCase(log.action, 'delete') or #strings.containsIgnoreCase(log.action, 'remove')} ? 'bg-danger' : 'bg-secondary'))"
+                                                  th:text="${log.action}">
+                                                Action
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border" th:text="${log.targetType}">
+                                                TARGET
+                                            </span>
+                                        </td>
+                                        <td class="small">
+                                            <span th:text="${log.description}">Description</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <form th:action="@{/admin/activity-logs/{id}/delete(id=${log.id})}" 
+                                                  method="post" 
+                                                  style="display: inline;"
+                                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa log này?');">
+                                                <button type="submit" class="btn btn-danger btn-sm" title="Xóa log">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="card-footer bg-white" th:if="${totalPages > 1}">
+                        <nav>
+                            <ul class="pagination justify-content-center mb-0">
+                                <!-- Previous Button -->
+                                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                                    <a class="page-link" 
+                                       th:href="@{/admin/activity-logs(page=${currentPage - 1}, size=${pageSize})}"
+                                       th:if="${currentPage > 0}">
+                                        <i class="bi bi-chevron-left"></i> Trước
+                                    </a>
+                                    <span class="page-link" th:if="${currentPage == 0}">
+                                        <i class="bi bi-chevron-left"></i> Trước
+                                    </span>
+                                </li>
+
+                                <!-- Page Numbers -->
+                                <li class="page-item" 
+                                    th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
+                                    th:if="${pageNum >= currentPage - 2 and pageNum <= currentPage + 2}"
+                                    th:classappend="${pageNum == currentPage} ? 'active'">
+                                    <a class="page-link" 
+                                       th:href="@{/admin/activity-logs(page=${pageNum}, size=${pageSize})}"
+                                       th:text="${pageNum + 1}">1</a>
+                                </li>
+
+                                <!-- Next Button -->
+                                <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+                                    <a class="page-link" 
+                                       th:href="@{/admin/activity-logs(page=${currentPage + 1}, size=${pageSize})}"
+                                       th:if="${currentPage + 1 < totalPages}">
+                                        Sau <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                    <span class="page-link" th:if="${currentPage + 1 >= totalPages}">
+                                        Sau <i class="bi bi-chevron-right"></i>
+                                    </span>
+                                </li>
+                            </ul>
+                        </nav>
+
+                        <div class="text-center mt-2 text-muted small">
+                            Trang <strong th:text="${currentPage + 1}">1</strong> / 
+                            <strong th:text="${totalPages}">1</strong>
+                            (Tổng: <strong th:text="${totalItems}">0</strong> bản ghi)
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Footer -->
+    <footer th:replace="~{layout/layout_fragment :: admin-footer}"></footer>
+
+    <!-- Include Scripts -->
+    <th:block th:replace="~{layout/layout_fragment :: scripts}"></th:block>
+
+    <style>
+        .table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+            transform: scale(1.005);
+        }
+
+        code {
+            background-color: #f1f3f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.875em;
+        }
+    </style>
+
+</body>
+
+</html>
