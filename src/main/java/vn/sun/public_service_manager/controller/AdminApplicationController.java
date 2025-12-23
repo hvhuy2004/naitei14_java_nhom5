@@ -1,6 +1,11 @@
 package vn.sun.public_service_manager.controller;
 
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +28,7 @@ import vn.sun.public_service_manager.entity.User;
 import vn.sun.public_service_manager.repository.UserRepository;
 import vn.sun.public_service_manager.service.ApplicationService;
 import vn.sun.public_service_manager.service.ServiceTypeService;
+import vn.sun.public_service_manager.utils.annotation.ApiMessage;
 import vn.sun.public_service_manager.utils.annotation.LogActivity;
 import vn.sun.public_service_manager.utils.constant.StatusEnum;
 
@@ -236,6 +242,28 @@ public class AdminApplicationController {
                 outputStream.write(buffer, 0, bytesRead);
             }
             outputStream.flush();
+        }
+    }
+    @GetMapping("/export-applications")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @ApiMessage("Xuất danh sách hồ sơ ra file CSV thành công")
+    public void exportApplicationsToCsv(HttpServletResponse response) {
+        try {
+            response.setContentType("text/csv; charset=UTF-8");
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=\"application_list_" + System.currentTimeMillis() + ".csv\"");
+
+            // Ghi BOM UTF-8
+            response.getOutputStream().write(0xEF);
+            response.getOutputStream().write(0xBB);
+            response.getOutputStream().write(0xBF);
+
+            Writer writer = new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8);
+            applicationService.exportApplicationsToCsv(writer);
+            writer.flush();
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi xuất file CSV Hồ sơ", e);
         }
     }
 }

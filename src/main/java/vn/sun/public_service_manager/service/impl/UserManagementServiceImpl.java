@@ -701,88 +701,8 @@ public class UserManagementServiceImpl implements UserManagementService {
         return response;
     }
 
-    @Override
-<<<<<<< Updated upstream
-    public void exportApplicationsToCsv(Writer writer, org.springframework.security.core.Authentication authentication) {
-        try {
-            // 1. Ghi ký tự BOM để hỗ trợ hiển thị tiếng Việt trong Excel
-            writer.write('\ufeff');
-
-            try (CSVWriter csvWriter = new CSVWriter(writer)) {
-                // Định nghĩa Header cho báo cáo hồ sơ
-                String[] header = {
-                        "Mã hồ sơ",
-                        "Tên dịch vụ",
-                        "Tên công dân",
-                        "Trạng thái hiện tại",
-                        "Ngày nộp",
-                        "Ghi chú",
-                        "Thời gian xử lý dự kiến (Ngày)"
-                };
-                csvWriter.writeNext(header);
-
-                // 2. Xác định role và apply filter
-                vn.sun.public_service_manager.dto.ApplicationFilterDTO filter = new vn.sun.public_service_manager.dto.ApplicationFilterDTO();
-                
-                boolean isManager = authentication.getAuthorities().stream()
-                        .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
-                
-                if (isManager) {
-                    // Nếu là MANAGER, chỉ lấy applications của department của họ
-                    String username = authentication.getName();
-                    vn.sun.public_service_manager.entity.User currentUser = userRepository.findByUsername(username)
-                            .orElseThrow(() -> new RuntimeException("User not found"));
-                    
-                    if (currentUser.getDepartment() != null) {
-                        filter.setDepartmentId(currentUser.getDepartment().getId());
-                    }
-                }
-                // ADMIN sẽ không có filter, lấy tất cả
-
-                // 3. Lấy dữ liệu hồ sơ với filter
-                org.springframework.data.jpa.domain.Specification<vn.sun.public_service_manager.entity.Application> spec = 
-                    vn.sun.public_service_manager.repository.specification.ApplicationSpecification.filterApplications(filter);
-                List<vn.sun.public_service_manager.entity.Application> applications = applicationRepository.findAll(spec);
-                
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
-                for (vn.sun.public_service_manager.entity.Application app : applications) {
-                    // Lấy trạng thái mới nhất từ danh sách statuses
-                    String currentStatus = "N/A";
-                    if (app.getStatuses() != null && !app.getStatuses().isEmpty()) {
-                        // Sắp xếp hoặc lấy phần tử cuối cùng (giả định phần tử cuối là mới nhất)
-                        ApplicationStatus lastStatus = app.getStatuses().get(app.getStatuses().size() - 1);
-                        currentStatus = lastStatus.getStatus() != null ? lastStatus.getStatus().name() : "PENDING";
-                    }
-
-                    String appCode = app.getApplicationCode() != null ? app.getApplicationCode() : "";
-                    String serviceName = (app.getService() != null) ? app.getService().getName() : "N/A";
-                    String citizenName = (app.getCitizen() != null) ? app.getCitizen().getFullName() : "N/A";
-                    String submittedAt = (app.getSubmittedAt() != null) ? app.getSubmittedAt().format(formatter) : "";
-                    String note = app.getNote() != null ? app.getNote() : "";
-                    String procTime = (app.getService() != null) ? String.valueOf(app.getService().getProcessingTime())
-                            : "0";
-
-                    // Ghi dòng dữ liệu vào CSV
-                    csvWriter.writeNext(new String[] {
-                            appCode,
-                            serviceName,
-                            citizenName,
-                            currentStatus,
-                            submittedAt,
-                            note,
-                            procTime
-                    });
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Lỗi khi xuất CSV Application: " + e.getMessage(), e);
-        }
-    }
 
     @Override
-=======
->>>>>>> Stashed changes
     public void exportCitizensToCsv(Writer writer) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {

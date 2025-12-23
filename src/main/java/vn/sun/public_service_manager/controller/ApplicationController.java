@@ -153,27 +153,5 @@ public class ApplicationController {
         response.setUploadedAt(java.time.LocalDateTime.now());
         return ResponseEntity.ok(response);
     }
-    @GetMapping("/export-applications")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    @ApiMessage("Xuất danh sách hồ sơ ra file CSV thành công")
-    public void exportApplicationsToCsv(HttpServletResponse response) {
-        try {
-            response.setContentType("text/csv; charset=UTF-8");
-            response.setCharacterEncoding("UTF-8");
-            response.setHeader("Content-Disposition",
-                    "attachment; filename=\"application_list_" + System.currentTimeMillis() + ".csv\"");
-
-            // Ghi BOM UTF-8
-            response.getOutputStream().write(0xEF);
-            response.getOutputStream().write(0xBB);
-            response.getOutputStream().write(0xBF);
-
-            Writer writer = new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8);
-            applicationService.exportApplicationsToCsv(writer);
-            writer.flush();
-        } catch (Exception e) {
-            throw new RuntimeException("Lỗi khi xuất file CSV Hồ sơ", e);
-        }
-    }
 
 }
