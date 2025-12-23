@@ -1,8 +1,11 @@
 package vn.sun.public_service_manager.entity;
 
+import java.beans.Transient;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import org.hibernate.annotations.Where;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,6 +22,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import vn.sun.public_service_manager.utils.BeanUtil;
 import vn.sun.public_service_manager.utils.SecurityUtil;
+import vn.sun.public_service_manager.utils.constant.StatusEnum;
 
 @Entity
 @Table(name = "applications")
@@ -73,5 +77,12 @@ public class Application {
     @PreUpdate
     protected void onUpdate() {
         lastUpdated = LocalDateTime.now();
+    }
+
+    @Transient
+    public StatusEnum getStatus() {
+        return (statuses != null && !statuses.isEmpty())
+                ? statuses.get(0).getStatus()
+                : null;
     }
 }
