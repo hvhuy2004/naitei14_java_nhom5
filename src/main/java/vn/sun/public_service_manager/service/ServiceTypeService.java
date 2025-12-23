@@ -24,6 +24,10 @@ public class ServiceTypeService {
         return serviceTypeRepository.findAll();
     }
 
+    public List<ServiceType> getServiceTypesByDepartmentId(Long departmentId) {
+        return serviceRepository.findDistinctServiceTypesByDepartmentId(departmentId);
+    }
+
     public Optional<ServiceType> getServiceTypeById(Long id) {
         return serviceTypeRepository.findById(id);
     }

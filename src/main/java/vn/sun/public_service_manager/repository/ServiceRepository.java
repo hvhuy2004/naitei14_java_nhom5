@@ -1,9 +1,11 @@
 package vn.sun.public_service_manager.repository;
 
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import vn.sun.public_service_manager.entity.Service;
 import vn.sun.public_service_manager.entity.ServiceType;
@@ -28,6 +30,9 @@ public interface ServiceRepository extends JpaRepository<Service, Long> {
     Page<Service> findByServiceTypeIdAndKeyword(Long serviceTypeId, String keyword, Pageable pageable);
 
     Page<Service> findByResponsibleDepartmentId(Long departmentId, Pageable pageable);
+
+    @Query("SELECT DISTINCT s.serviceType FROM Service s WHERE s.responsibleDepartment.id = :departmentId")
+    List<ServiceType> findDistinctServiceTypesByDepartmentId(@Param("departmentId") Long departmentId);
 
     Page<Service> findByNameContainingIgnoreCaseOrCodeContainingIgnoreCase(
             String nameKeyword,

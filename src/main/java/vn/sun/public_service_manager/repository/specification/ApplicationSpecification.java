@@ -64,6 +64,13 @@ public class ApplicationSpecification {
                 predicates.add(criteriaBuilder.equal(assignedStaffJoin.get("id"), filter.getAssignedStaffId()));
             }
 
+            // Filter by department (cho MANAGER)
+            if (filter.getDepartmentId() != null) {
+                Join<vn.sun.public_service_manager.entity.Service, Department> departmentJoin = 
+                    serviceJoin.join("responsibleDepartment", JoinType.LEFT);
+                predicates.add(criteriaBuilder.equal(departmentJoin.get("id"), filter.getDepartmentId()));
+            }
+
             // Ensure distinct results
             query.distinct(true);
 

@@ -279,7 +279,7 @@
                         </div>
 
                         <!-- Assign Staff Form -->
-                        <div class="card" sec:authorize="hasRole('ADMIN')">
+                        <div class="card" sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">
                             <div class="card-header bg-warning">
                                 <h5><i class="fas fa-user-edit"></i> Gán nhân viên</h5>
                             </div>

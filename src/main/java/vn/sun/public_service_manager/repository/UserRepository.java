@@ -14,4 +14,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     @Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = 'ROLE_STAFF'")
     List<User> findAllStaff();
+    
+    @Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = 'ROLE_STAFF' AND u.department.id = :departmentId")
+    List<User> findStaffByDepartmentId(@org.springframework.data.repository.query.Param("departmentId") Long departmentId);
 }

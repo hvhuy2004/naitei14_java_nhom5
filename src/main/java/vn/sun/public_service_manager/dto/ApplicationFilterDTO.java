@@ -11,4 +11,5 @@ public class ApplicationFilterDTO {
     private String citizenNationalId;
     private String citizenName;
     private Long assignedStaffId;
+    private Long departmentId; // Filter theo department (cho MANAGER)
 }

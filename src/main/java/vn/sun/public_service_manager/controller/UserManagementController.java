@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -182,7 +183,7 @@ public class UserManagementController {
     @GetMapping("/export-applications")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @ApiMessage("Xuất danh sách hồ sơ ra file CSV thành công")
-    public void exportApplicationsToCsv(HttpServletResponse response) {
+    public void exportApplicationsToCsv(HttpServletResponse response, Authentication authentication) {
         try {
             response.setContentType("text/csv; charset=UTF-8");
             response.setCharacterEncoding("UTF-8");
@@ -195,7 +196,7 @@ public class UserManagementController {
             response.getOutputStream().write(0xBF);
 
             Writer writer = new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8);
-            userManagementService.exportApplicationsToCsv(writer);
+            userManagementService.exportApplicationsToCsv(writer, authentication);
             writer.flush();
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi xuất file CSV Hồ sơ", e);

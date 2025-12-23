@@ -87,6 +87,6 @@ public interface UserManagementService {
 
     void exportCitizensToCsv(Writer writer);
 
-    void exportApplicationsToCsv(Writer writer);
+    void exportApplicationsToCsv(Writer writer, org.springframework.security.core.Authentication authentication);
     public Map<String, Object> importCitizensFromCsv(MultipartFile file) throws IOException;
 }

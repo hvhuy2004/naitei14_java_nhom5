@@ -1,5 +1,6 @@
 package vn.sun.public_service_manager.controller;
 
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -56,22 +57,36 @@ public class AdminApplicationController {
         filter.setCitizenName(citizenName);
         filter.setAssignedStaffId(assignedStaffId);
 
-        // Check if user is staff
+        // Lấy thông tin user hiện tại
+        String username = authentication.getName();
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Check role và apply filter tương ứng
         boolean isStaff = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(role -> role.equals("ROLE_STAFF"));
+        
+        boolean isManager = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(role -> role.equals("ROLE_MANAGER"));
 
         if (isStaff) {
             // Nếu là STAFF, chỉ lấy applications được gán cho staff đó
-            String username = authentication.getName();
-            User currentUser = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
             filter.setAssignedStaffId(currentUser.getId());
             model.addAttribute("isStaff", true);
-        } else {
-            // ADMIN hoặc MANAGER xem hết
+            model.addAttribute("isManager", false);
+        } else if (isManager) {
+            // Nếu là MANAGER, chỉ lấy applications của department mình
+            if (currentUser.getDepartment() != null) {
+                filter.setDepartmentId(currentUser.getDepartment().getId());
+            }
             model.addAttribute("isStaff", false);
+            model.addAttribute("isManager", true);
+        } else {
+            // ADMIN xem hết
+            model.addAttribute("isStaff", false);
+            model.addAttribute("isManager", false);
         }
 
         // Create pageable with sorting by submitted date descending
@@ -79,6 +94,18 @@ public class AdminApplicationController {
 
         // Get applications
         Page<ApplicationDTO> applicationPage = applicationService.getAllApplications(filter, pageable);
+
+        // Debug log
+        System.out.println("========== DEBUG APPLICATION LIST ==========");
+        System.out.println("Username: " + username);
+        System.out.println("Is Staff: " + isStaff);
+        System.out.println("Is Manager: " + isManager);
+        System.out.println("Filter departmentId: " + filter.getDepartmentId());
+        System.out.println("Total elements found: " + applicationPage.getTotalElements());
+        System.out.println("Content size: " + applicationPage.getContent().size());
+        applicationPage.getContent().forEach(app -> 
+            System.out.println("  - App: " + app.getApplicationCode() + ", Service: " + app.getServiceName() + ", Status: " + app.getStatus()));
+        System.out.println("==========================================");
 
         // Add to model
         model.addAttribute("applications", applicationPage.getContent());
@@ -90,18 +117,48 @@ public class AdminApplicationController {
         // Add filter values to keep in form
         model.addAttribute("filter", filter);
         model.addAttribute("statuses", StatusEnum.values());
-        model.addAttribute("serviceTypes", serviceTypeService.getAllServiceTypes());
+        
+        // Filter serviceTypes theo department nếu là MANAGER hoặc STAFF
+        List<vn.sun.public_service_manager.entity.ServiceType> serviceTypes;
+        if ((isManager || isStaff) && currentUser.getDepartment() != null) {
+            serviceTypes = serviceTypeService.getServiceTypesByDepartmentId(currentUser.getDepartment().getId());
+        } else {
+            serviceTypes = serviceTypeService.getAllServiceTypes();
+        }
+        model.addAttribute("serviceTypes", serviceTypes);
 
         return "admin/application_list";
     }
 
     @GetMapping("/{id}")
-    public String viewApplicationDetail(@PathVariable Long id, Model model) {
+    public String viewApplicationDetail(@PathVariable Long id, Model model, Authentication authentication) {
         try {
             ApplicationResDTO application = applicationService.getApplicationById(id);
             model.addAttribute("applicationDetail", application);
             model.addAttribute("statuses", StatusEnum.values());
-            model.addAttribute("staffList", userRepository.findAllStaff());
+            
+            // Lấy danh sách staff theo role
+            boolean isManager = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
+            
+            List<User> staffList;
+            if (isManager) {
+                // MANAGER chỉ thấy staff trong department của mình
+                String username = authentication.getName();
+                User currentUser = userRepository.findByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+                
+                if (currentUser.getDepartment() != null) {
+                    staffList = userRepository.findStaffByDepartmentId(currentUser.getDepartment().getId());
+                } else {
+                    staffList = List.of(); // Không có department thì không có staff
+                }
+            } else {
+                // ADMIN thấy tất cả staff
+                staffList = userRepository.findAllStaff();
+            }
+            
+            model.addAttribute("staffList", staffList);
             return "admin/application_detail";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());

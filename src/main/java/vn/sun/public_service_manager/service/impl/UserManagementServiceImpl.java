@@ -694,7 +694,7 @@ public class UserManagementServiceImpl implements UserManagementService {
         return response;
     }
     @Override
-    public void exportApplicationsToCsv(Writer writer) {
+    public void exportApplicationsToCsv(Writer writer, org.springframework.security.core.Authentication authentication) {
         try {
             // 1. Ghi ký tự BOM để hỗ trợ hiển thị tiếng Việt trong Excel
             writer.write('\ufeff');
@@ -712,11 +712,32 @@ public class UserManagementServiceImpl implements UserManagementService {
                 };
                 csvWriter.writeNext(header);
 
-                // 2. Lấy dữ liệu hồ sơ (Nên dùng JOIN FETCH để tránh Lazy loading)
-                List<Application> applications = applicationRepository.findAll();
+                // 2. Xác định role và apply filter
+                vn.sun.public_service_manager.dto.ApplicationFilterDTO filter = new vn.sun.public_service_manager.dto.ApplicationFilterDTO();
+                
+                boolean isManager = authentication.getAuthorities().stream()
+                        .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
+                
+                if (isManager) {
+                    // Nếu là MANAGER, chỉ lấy applications của department của họ
+                    String username = authentication.getName();
+                    vn.sun.public_service_manager.entity.User currentUser = userRepository.findByUsername(username)
+                            .orElseThrow(() -> new RuntimeException("User not found"));
+                    
+                    if (currentUser.getDepartment() != null) {
+                        filter.setDepartmentId(currentUser.getDepartment().getId());
+                    }
+                }
+                // ADMIN sẽ không có filter, lấy tất cả
+
+                // 3. Lấy dữ liệu hồ sơ với filter
+                org.springframework.data.jpa.domain.Specification<vn.sun.public_service_manager.entity.Application> spec = 
+                    vn.sun.public_service_manager.repository.specification.ApplicationSpecification.filterApplications(filter);
+                List<vn.sun.public_service_manager.entity.Application> applications = applicationRepository.findAll(spec);
+                
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-                for (Application app : applications) {
+                for (vn.sun.public_service_manager.entity.Application app : applications) {
                     // Lấy trạng thái mới nhất từ danh sách statuses
                     String currentStatus = "N/A";
                     if (app.getStatuses() != null && !app.getStatuses().isEmpty()) {
