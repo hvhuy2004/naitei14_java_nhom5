@@ -186,29 +186,6 @@ public class UserManagementController {
         }
     }
 
-    @GetMapping("/export-applications")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    @ApiMessage("Xuất danh sách hồ sơ ra file CSV thành công")
-    public void exportApplicationsToCsv(HttpServletResponse response, Authentication authentication) {
-        try {
-            response.setContentType("text/csv; charset=UTF-8");
-            response.setCharacterEncoding("UTF-8");
-            response.setHeader("Content-Disposition",
-                    "attachment; filename=\"application_list_" + System.currentTimeMillis() + ".csv\"");
-
-            // Ghi BOM UTF-8
-            response.getOutputStream().write(0xEF);
-            response.getOutputStream().write(0xBB);
-            response.getOutputStream().write(0xBF);
-
-            Writer writer = new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8);
-            userManagementService.exportApplicationsToCsv(writer, authentication);
-            writer.flush();
-        } catch (Exception e) {
-            throw new RuntimeException("Lỗi khi xuất file CSV Hồ sơ", e);
-        }
-    }
-
     @PostMapping("/import")
     @PreAuthorize("hasRole('ADMIN')")
     @ApiMessage("Nhập danh sách nhân viên từ file CSV thành công")
